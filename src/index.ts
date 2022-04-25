@@ -10,7 +10,7 @@ import { getTrackedTime, trackTime } from './services/clickup/time.tracking';
  
   
     const [start, end] = [
-        DateTime.local({ zone: "utc" }).startOf('day').minus({ days: 20 }).startOf('day').toJSDate(), // start
+        DateTime.local({ zone: "utc" }).startOf('day').minus({ days: 25 }).startOf('day').toJSDate(), // start
         DateTime.local({ zone: "utc" }).startOf('day').endOf('day').toJSDate(), // end
     ]
 
@@ -21,10 +21,9 @@ import { getTrackedTime, trackTime } from './services/clickup/time.tracking';
         singleEvents: true,
         orderBy: 'startTime',
     })
-
  
-    const queue = eventsList.filter(it => it.status === 'confirmed' && (it?.summary || '').match(/\[.*\]/g) && (it?.attendees || []).some(at => at?.self && at.responseStatus === 'accepted')).map(event => {
- 
+    const queue = eventsList.filter(it => it.status === 'confirmed' && (it?.summary || '').match(/\[.*\]/g) && ((it?.attendees || []).some(at => at?.self && at.responseStatus === 'accepted') || it.creator.self)).map(event => {
+      
         return async () => {
        
             const taskId = event.summary.match(/\[.*\]/g)[0].replace(/\[|\]/g, "");
@@ -61,7 +60,7 @@ import { getTrackedTime, trackTime } from './services/clickup/time.tracking';
                     end: event.end.dateTime,
                 })
 
-                console.log(`Tracking time for ${event.summary}`)
+                console.log(event.start.dateTime.toISOString(), `Tracking time for ${event.summary}`)
 
                 // edit color event on google calendar
                 return updateEvent({
@@ -70,7 +69,7 @@ import { getTrackedTime, trackTime } from './services/clickup/time.tracking';
                 })
             }
 
-            console.log(`Already tracked time for ${event.summary}`)
+            console.log(event.start.dateTime.toISOString(), `Already tracked time for ${event.summary}`)
        
         }
   
