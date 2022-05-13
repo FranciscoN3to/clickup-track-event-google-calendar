@@ -3,6 +3,8 @@ import { setTokenEnv } from '@providers/auth/google';
 import { DateTime } from 'luxon'
 import { getEvents, updateEvent } from './services/calendar/events';
 import { getTrackedTime, trackTime } from './services/clickup/time.tracking';
+import Pqueue from 'p-queue'
+import logger from './utils/logger';
 
 (async () => {
 
@@ -10,8 +12,8 @@ import { getTrackedTime, trackTime } from './services/clickup/time.tracking';
  
   
     const [start, end] = [
-        DateTime.local({ zone: "utc" }).startOf('day').minus({ days: 25 }).startOf('day').toJSDate(), // start
-        DateTime.local({ zone: "utc" }).startOf('day').endOf('day').toJSDate(), // end
+        DateTime.local({ zone: "utc" }).startOf('day').minus({ days: 20 }).startOf('day').toJSDate(), // start
+        DateTime.local({ zone: "utc" }).startOf('day').minus({ day: 1 }).endOf('day').toJSDate(), // end
     ]
 
 
@@ -22,11 +24,11 @@ import { getTrackedTime, trackTime } from './services/clickup/time.tracking';
         orderBy: 'startTime',
     })
  
-    const queue = eventsList.filter(it => it.status === 'confirmed' && (it?.summary || '').match(/\[.*\]/g) && ((it?.attendees || []).some(at => at?.self && at.responseStatus === 'accepted') || it.creator.self)).map(event => {
+    const queueEvents = eventsList.filter(it => it.status === 'confirmed' && (it?.summary || '').match(/\[.*\]/g) && ((it?.attendees || []).some(at => at?.self && at.responseStatus === 'accepted') || it.creator.self)).map(event => {
       
         return async () => {
        
-            const taskId = event.summary.match(/\[.*\]/g)[0].replace(/\[|\]/g, "");
+            const taskId = (event.summary.match(/\[.*\]/g) || [])[0].replace(/\[|\]/g, "");
 
             const hasCustomTaskId = taskId.includes("CX-");
 
@@ -60,29 +62,51 @@ import { getTrackedTime, trackTime } from './services/clickup/time.tracking';
                     end: event.end.dateTime,
                 })
 
-                console.log(event.start.dateTime.toISOString(), `Tracking time for ${event.summary}`)
+                logger.info(
+                    `Tracking time for ${event.summary} - ${event.start.dateTime.toISOString()}`,
+                );
+
+                // console.log(event.start.dateTime.toISOString(), `Tracking time for ${event.summary}`)
 
                 // edit color event on google calendar
-                return updateEvent({
+                await updateEvent({
                     ...event,
                     colorId: '2',
                 })
+
+                 
+            }else {
+                logger.info(
+                    `Already tracked time for ${event.summary} - ${event.start.dateTime.toISOString()}`,
+                );
+                // console.log(event.start.dateTime.toISOString(), `Already tracked time for ${event.summary}`)
             }
 
-            console.log(event.start.dateTime.toISOString(), `Already tracked time for ${event.summary}`)
        
         }
   
     })
 
     //TODO: add queue to async function
-    await Promise.all(queue.map(it => it()))
+    const queue = new Pqueue({concurrency: 10, interval: 2000});
+    let count = 0;
+    queue.on('active', () => {
+        logger.info(
+            `Working on item [EMISSAO NFe] #${++count}.  Size: ${queue.size}  Pending: ${
+                queue.pending
+            }`,
+        );
+    })
+
+    await queue.addAll(queueEvents)
+
+    // await Promise.all(queue.map(it => it()))
  
   
 })()
 
 /*TODO: 
-    intergrar com banco de dados
+    integrar com banco de dados
         salvar id da task do clickup
         salvar eventos no banco de dados e relacionar com a task do clickup
         salvar time tracked no banco de dados e relacionar com a task do clickup

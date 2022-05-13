@@ -8,11 +8,13 @@ const googleAPI = axios.create({
 
 
 googleAPI.interceptors.request.use(async (axiosConfig) => {
-	axiosConfig.headers.Authorization = `Bearer ${process.env.token}`;
+	// axiosConfig.headers = ;i
+	Object.assign(axiosConfig.headers, { Authorization: `Bearer ${process.env.token}` })
+	
 	return axiosConfig;
 });
 
-googleAPI.interceptors.response.use(null, async (error) => {
+googleAPI.interceptors.response.use((config) => config, async (error) => {
 	if (error?.response) {
 		if ([403, 401].includes(error.response.status)) {
 			const authentication = await auth();

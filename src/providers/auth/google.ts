@@ -48,7 +48,9 @@ async function auth(): Promise<{ access_token: string; expires_in: number; token
 		client_id: process.env.CLIENT_ID,
 	});
 
-	const jwtGoogle = await axios.post(process.env.TOKEN_URI, data, {
+	console.log(process.env.TOKEN_URI);
+
+	const jwtGoogle = await axios.post(process.env.TOKEN_URI || 'https://oauth2.googleapis.com/token', data, {
 		headers: {
 			"Content-Type": "application/x-www-form-urlencoded"
 		}

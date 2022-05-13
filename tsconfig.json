@@ -6,9 +6,22 @@
         "resolveJsonModule": true,
         "esModuleInterop": true,
         "target": "ES2017",
-        "sourceMap": true,
+        // "sourceMap": true,
         "incremental": true,
         "skipLibCheck": false,
+
+ 
+  
+        "moduleResolution": "Node",
+     
+        "forceConsistentCasingInFileNames": true,
+        "noFallthroughCasesInSwitch": true,
+        "isolatedModules": false,
+        "strict": true,
+        "noImplicitAny": true,
+        "useUnknownInCatchVariables": false,
+        "inlineSourceMap": true,
+
         "types": [
             "node"
         ],

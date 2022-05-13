@@ -5,7 +5,7 @@ const clickupAPI = axios.create({
 });
 
 clickupAPI.interceptors.request.use(async (axiosConfig) => {
-	axiosConfig.headers.Authorization = process.env.CLICKUP_TOKEN;
+    Object.assign(axiosConfig.headers, { Authorization: process.env.CLICKUP_TOKEN })
 	return axiosConfig;
 });
 
