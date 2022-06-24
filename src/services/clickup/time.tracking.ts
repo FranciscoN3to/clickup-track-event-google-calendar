@@ -1,4 +1,5 @@
 import { clickupAPI } from '@providers/api'
+import { AxiosResponse } from 'axios'
 import { ParmsTrackTime, TrackingTime } from './types'
 
 type Params = {
@@ -6,10 +7,10 @@ type Params = {
     hasCustomTaskId: boolean
 }
 
-async function getTrackedTime(params: Params): Promise<TrackingTime[]> {
-   const { data } = await clickupAPI.get<TrackingTime[]>(`api/v2/task/${params.taskId}/time/?custom_task_ids=${params.hasCustomTaskId}&team_id=${process.env.CLICKUP_TEAM_Id}`)
+async function getTrackedTime(params: Params): Promise<AxiosResponse<TrackingTime[]>> {
+   return clickupAPI.get<TrackingTime[]>(`api/v2/task/${params.taskId}/time/?custom_task_ids=${params.hasCustomTaskId}&team_id=${process.env.CLICKUP_TEAM_Id}`)
 
-    return data
+    // return { data, headers }
 }
 
 async function trackTime({start, end, taskId, hasCustomTaskId}: ParmsTrackTime) {

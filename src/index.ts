@@ -8,12 +8,22 @@ import logger from './utils/logger';
 
 (async () => {
 
+    const queue = new Pqueue({concurrency: 10, interval: 2000});
+    let count = 0;
+    queue.on('active', () => {
+        logger.info(
+            `Working on item [TRACKING TIME] #${++count}.  Size: ${queue.size}  Pending: ${
+                queue.pending
+            }`,
+        );
+    })
+
     await setTokenEnv()
  
   
     const [start, end] = [
-        DateTime.local({ zone: "utc" }).startOf('day').minus({ days: 20 }).startOf('day').toJSDate(), // start
-        DateTime.local({ zone: "utc" }).startOf('day').minus({ day: 1 }).endOf('day').toJSDate(), // end
+        DateTime.local({ zone: "utc" }).startOf('day').minus({ days: 30 }).startOf('day').toJSDate(), // start
+        DateTime.local({ zone: "utc" }).startOf('day').endOf('day').toJSDate(), // end
     ]
 
 
@@ -32,7 +42,7 @@ import logger from './utils/logger';
 
             const hasCustomTaskId = taskId.includes("CX-");
 
-            const trackTimes = await getTrackedTime({
+            const { data: trackTimes, headers } = await getTrackedTime({
                 taskId,
                 hasCustomTaskId
             })
@@ -81,6 +91,16 @@ import logger from './utils/logger';
                 );
                 // console.log(event.start.dateTime.toISOString(), `Already tracked time for ${event.summary}`)
             }
+            // console.log(headers)
+            const rateLimitRemaing = Number(headers["x-ratelimit-remaining"]);
+            const rateLimitReset = Number(headers["x-ratelimit-reset"]);
+            if (rateLimitRemaing < 10) {
+              logger.info(`Pausing queue requests for ${rateLimitReset} ms`);
+              queue.pause();
+              setTimeout(() => {
+                queue.start();
+              }, rateLimitReset + 1500);
+            }
 
        
         }
@@ -88,15 +108,7 @@ import logger from './utils/logger';
     })
 
     //TODO: add queue to async function
-    const queue = new Pqueue({concurrency: 10, interval: 2000});
-    let count = 0;
-    queue.on('active', () => {
-        logger.info(
-            `Working on item [EMISSAO NFe] #${++count}.  Size: ${queue.size}  Pending: ${
-                queue.pending
-            }`,
-        );
-    })
+
 
     await queue.addAll(queueEvents)
 
@@ -111,6 +123,6 @@ import logger from './utils/logger';
         salvar eventos no banco de dados e relacionar com a task do clickup
         salvar time tracked no banco de dados e relacionar com a task do clickup
     
-    quando o evento tiver alguma alteração no google agenda, irá impactar na task do clickup
+    quando o evento tiver alguma alteração no google calendar, irá impactar na task do clickup
 
 */

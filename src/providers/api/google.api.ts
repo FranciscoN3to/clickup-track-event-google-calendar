@@ -9,7 +9,8 @@ const googleAPI = axios.create({
 
 googleAPI.interceptors.request.use(async (axiosConfig) => {
 	// axiosConfig.headers = ;i
-	Object.assign(axiosConfig.headers, { Authorization: `Bearer ${process.env.token}` })
+	if(axiosConfig.headers)
+		Object.assign(axiosConfig.headers, { Authorization: `Bearer ${process.env.token}` })
 	
 	return axiosConfig;
 });

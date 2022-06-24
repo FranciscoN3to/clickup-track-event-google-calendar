@@ -11,14 +11,14 @@ type Params = {
 }
 
 async function getEvents(params: Params): Promise<Event[]> {
-    let nextPageToken = null
+    let nextPageToken = ''
     let data: Event[] = []
     do {
 
         const response = (await googleAPI.get<ResponseEvent>(`/calendar/v3/calendars/${process.env.CALENDAR_ID}/events`, {
             params: {
                 ...params,
-                // pageToken: nextPageToken // will get all events from calendar - this param must to be single if you want to use it
+                ...(nextPageToken ? {pageToken: nextPageToken} : {}) // will get all events from calendar - this param must to be single if you want to use it
             }
         }))
 
