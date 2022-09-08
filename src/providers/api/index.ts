@@ -1,4 +1,4 @@
-import googleAPI from './google.api'
-import clickupAPI from './clickup.api'
+import googleAPI from './google.api';
+import clickupAPI from './clickup.api';
 
-export { googleAPI, clickupAPI }
+export { googleAPI, clickupAPI };

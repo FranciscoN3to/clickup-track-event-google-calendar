@@ -1,5 +1,3 @@
- 
-
 export interface DefaultReminder {
     method: string;
     minutes: number;
@@ -126,7 +124,7 @@ export interface Attachment {
 
 export interface Event {
     kind: string;
-    colorId: string,
+    colorId: string;
     etag: string;
     id: string;
     status: string;
@@ -168,5 +166,3 @@ export interface ResponseEvent {
     nextPageToken: string;
     items: Event[];
 }
-
-
