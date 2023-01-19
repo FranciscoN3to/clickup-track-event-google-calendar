@@ -22,11 +22,7 @@ import { wait } from './utils';
     await setTokenEnv();
 
     const [start, end] = [
-        DateTime.local({ zone: 'utc' })
-            .startOf('day')
-            .minus({ days: 20 })
-            .startOf('day')
-            .toJSDate(), // start
+        DateTime.local({ zone: 'utc' }).startOf('day').minus({ days: 1 }).startOf('day').toJSDate(), // start
         DateTime.local({ zone: 'utc' }).startOf('day').endOf('day').toJSDate(), // end
     ];
 
@@ -47,7 +43,10 @@ import { wait } from './utils';
         )
         .map((event) => {
             return async () => {
-                const taskId = (event.summary.match(/\[.*\]/g) || [])[0].replace(/\[|\]/g, '');
+                const taskSumaryMatch = ((event?.summary || '').match(/\[.*\]/g) || []) as string[];
+                const taskId = taskSumaryMatch.length
+                    ? taskSumaryMatch[0].replace(/\[|\]/g, '')
+                    : '';
 
                 const hasCustomTaskId = taskId.includes('CX-');
                 let trackTimes: TrackingTime[] = [];
