@@ -22,7 +22,7 @@ import { wait } from './utils';
     await setTokenEnv();
 
     const [start, end] = [
-        DateTime.local({ zone: 'utc' }).startOf('day').minus({ days: 1 }).startOf('day').toJSDate(), // start
+        DateTime.local({ zone: 'utc' }).startOf('day').minus({ days: 5 }).startOf('day').toJSDate(), // start
         DateTime.local({ zone: 'utc' }).startOf('day').endOf('day').toJSDate(), // end
     ];
 
@@ -48,7 +48,7 @@ import { wait } from './utils';
                     ? taskSumaryMatch[0].replace(/\[|\]/g, '')
                     : '';
 
-                const hasCustomTaskId = taskId.includes('CX-');
+                const hasCustomTaskId = taskId.includes('-');
                 let trackTimes: TrackingTime[] = [];
 
                 const { data, headers, status } = await getTrackedTime({
