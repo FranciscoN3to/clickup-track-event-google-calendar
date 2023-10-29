@@ -10,6 +10,7 @@ function AppRoutes() {
       <Route path="/login" element={<Body><Login /></Body>}/> 
       <Route path="/" element={<Layout />}>
         <Route index element={<Home />} />
+        <Route path='/authorization'  />
       </Route>
     </Routes>
   );
