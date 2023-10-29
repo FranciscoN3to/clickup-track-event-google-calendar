@@ -1,42 +1,25 @@
 {
-    "compilerOptions": { 
-        "module": "commonjs",
-        "declaration": true,
-        "removeComments": true,
-        "resolveJsonModule": true,
-        "esModuleInterop": true,
-        "target": "ES2017",
-        // "sourceMap": true,
-        "incremental": true,
-        "skipLibCheck": false,
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
 
- 
-  
-        "moduleResolution": "Node",
-     
-        "forceConsistentCasingInFileNames": true,
-        "noFallthroughCasesInSwitch": true,
-        "isolatedModules": false,
-        "strict": true,
-        "noImplicitAny": true,
-        "useUnknownInCatchVariables": false,
-        "inlineSourceMap": true,
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
 
-        "types": [
-            "node"
-        ],
-        "outDir": "./dist",
-        "baseUrl": ".",
-        "typeRoots": [
-            "node_modules/@types",
-            "src/@types"
-        ],
-        "paths": {
-            "@providers/*": ["src/providers/*"],
-        }
-    },
-    "include": ["src/**/*"],
-    "exclude": [
-        "node_modules"
-    ]
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["src"],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }

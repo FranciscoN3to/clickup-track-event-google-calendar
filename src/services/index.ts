@@ -4,9 +4,9 @@ import { DateTime } from 'luxon';
 import { getEvents, updateEvent } from './services/calendar/events';
 import { getTrackedTime, trackTime } from './services/clickup/time.tracking';
 import Pqueue from 'p-queue';
-import logger from './utils/logger';
+import logger from '../../old/src/utils/logger';
 import { TrackingTime } from './services/clickup/types';
-import { wait } from './utils';
+import { wait } from '../../old/src/utils';
 
 (async () => {
     const queue = new Pqueue({ concurrency: 10, interval: 2000 });
