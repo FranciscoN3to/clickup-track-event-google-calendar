@@ -1,31 +1,26 @@
 import axios from 'axios';
-import { auth } from '../auth/google';
+import { oauthSignIn } from '@providers/auth/oath2.google';
 
 const googleAPI = axios.create({
-    baseURL: process.env.GOOGLE_API_URL,
+  baseURL: import.meta.env.VITE_GOOGLE_API_URL,
 });
 
 googleAPI.interceptors.request.use(async (axiosConfig) => {
-    // axiosConfig.headers = ;i
-    if (axiosConfig.headers)
-        Object.assign(axiosConfig.headers, { Authorization: `Bearer ${process.env.token}` });
+  const googleToken = localStorage.getItem('google-token')
+  if (axiosConfig.headers && googleToken)
+    Object.assign(axiosConfig.headers, { Authorization: `Bearer ${googleToken}` });
 
-    return axiosConfig;
+  return axiosConfig;
 });
 
 googleAPI.interceptors.response.use(
-    (config) => config,
-    async (error) => {
-        if (error?.response) {
-            if ([403, 401].includes(error.response.status)) {
-                const authentication = await auth();
-                process.env.token = authentication.access_token;
-                error.config.headers.Authorization = `Bearer ${process.env.token}`;
-                return axios(error.config);
-            }
-        }
-        throw error;
-    },
+  (config) => config,
+  async (error) => {
+    if (error?.response) {
+      if ([403, 401].includes(error.response.status)) return oauthSignIn();
+    }
+    throw error;
+  },
 );
 
 export default googleAPI;

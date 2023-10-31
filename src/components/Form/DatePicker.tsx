@@ -3,7 +3,7 @@ type IDatePicker = React.HTMLAttributes<HTMLDivElement> & {
     name: string
 }
 
-function DatePicker({label, name}: IDatePicker) {
+function DatePicker({label, name, defaultValue}: IDatePicker) {
   return <div>
     <label htmlFor={name} className="block text-sm font-semibold leading-6 text-gray-900">
       {label}
@@ -13,6 +13,7 @@ function DatePicker({label, name}: IDatePicker) {
         type="date"
         name={name}
         id={name}
+        defaultValue={defaultValue}
         autoComplete="given-name"
         className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
       />
