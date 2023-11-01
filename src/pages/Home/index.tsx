@@ -2,11 +2,13 @@
 import DatePicker from '@components/Form/DatePicker'
 import { oauthSignIn } from '@providers/auth/oath2.google';
 import { DateTime } from 'luxon';
-import { useEffect, useState } from 'react';
+import { FormEvent, useEffect, useState, useRef } from 'react';
 
 function Home() {
   const [[start, end], setDefaultDate] = useState<[string, string]>(['', ''])
   const [defaultEmail, setDefaultEmail] = useState<string>('')
+  const form = useRef<HTMLFormElement>()
+
   useEffect(() => {
     const [startDate, endDate] = [
       DateTime.local({ zone: 'utc' }).startOf('day').minus({ days: 5 }).startOf('day').toISODate(), // start
@@ -14,8 +16,15 @@ function Home() {
     ];
     if(startDate && endDate)
       setDefaultDate([startDate, endDate])
+
+    const email = localStorage.getItem('calendar-id')
+    setDefaultEmail(email || '')
   }, [])
 
+  const onSubmit = () => {
+    form.current.defaultPrevented()
+ 
+  }
 
 
   return (
@@ -26,7 +35,7 @@ function Home() {
           Preencha os campos correspondentes a data desejada para o lançamento.
         </p>
       </div>
-      <form className="mx-auto mt-16 max-w-xl sm:mt-20">
+      <form ref={form} className="mx-auto mt-16 max-w-xl sm:mt-20">
         <div className="mb-5">
           <label 
             htmlFor="calendarId" 
@@ -49,7 +58,7 @@ function Home() {
           <DatePicker defaultValue={end} label="Data Final" name="end_date" />
         </div>
         <div className="mt-5">
-          <button onClick={oauthSignIn} className="h-10 px-6 font-semibold rounded-md border bo  text-slate-50 bg-indigo-700" type="button">
+          <button  className="h-10 px-6 font-semibold rounded-md border bo  text-slate-50 bg-indigo-700" type="button">
             Lançar horas
           </button>
         </div>
