@@ -2,6 +2,7 @@ import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import Home from '@pages/Home';
 import Layout from '@components/Layout';
 import { useEffect } from 'react';
+import Credentials from '@pages/Credentials';
 
 function AuthorizationComponent () {
   const { hash } = useLocation()
@@ -22,6 +23,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<Layout />}>
         <Route index element={<Home />} />
+        <Route path='/credentials' element={<Credentials />} />
         <Route path='/authorization' element={<AuthorizationComponent />} />
       </Route>
     </Routes>

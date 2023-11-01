@@ -1,4 +1,3 @@
-import 'dotenv/config'; 
 import { DateTime } from 'luxon';
 import Pqueue from 'p-queue';
 import { getEvents, updateEvent } from '@services/calendar/events';
@@ -8,16 +7,10 @@ import { TrackingTime } from '@services/clickup/types';
 import { wait } from 'src/utils/timeout';
 
 
-(async () => {
+export async function timeTracker(calendarId: string, start: Date, end: Date)  {
   const queue = new Pqueue({ concurrency: 10, interval: 2000 });
- 
 
-  const [start, end] = [
-    DateTime.local({ zone: 'utc' }).startOf('day').minus({ days: 5 }).startOf('day').toJSDate(), // start
-    DateTime.local({ zone: 'utc' }).startOf('day').endOf('day').toJSDate(), // end
-  ];
-
-  const eventsList = await getEvents('email@email.com', {
+  const eventsList = await getEvents(calendarId, {
     timeMin: start.toISOString(),
     timeMax: end.toISOString(),
     singleEvents: true,
@@ -61,29 +54,29 @@ import { wait } from 'src/utils/timeout';
           queue.pause();
           await wait(rateLimitReset);
           queue.start();
-          const { data } = await getTrackedTime({
+          const tracked = await getTrackedTime({
             taskId,
             hasCustomTaskId,
           });
 
-          trackTimes = data;
+          trackTimes = tracked.data;
         }
-
+        const userId = localStorage.getItem('clickup-user-id')
         const userTrackedTimes = trackTimes.find(
-          (it) => Number(it.user.id) === Number(process.env.CLICKUP_USER_ID),
+          (it) => Number(it.user.id) === Number(userId),
         );
 
         const alreadyTracked = userTrackedTimes?.intervals.some((it) => {
-          const start = DateTime.fromMillis(Number(it.start))
+          const startDate = DateTime.fromMillis(Number(it.start))
             .setZone('utc')
             .minus({ minutes: 3 })
             .toJSDate();
-          const end = DateTime.fromMillis(Number(it.end))
+          const endDate = DateTime.fromMillis(Number(it.end))
             .setZone('utc')
             .plus({ minutes: 3 })
             .toJSDate();
 
-          return start <= event.start.dateTime && end >= event.end.dateTime;
+          return startDate <= event.start.dateTime && endDate >= event.end.dateTime;
         });
 
         // console.log(alreadyTracked)
@@ -105,7 +98,7 @@ import { wait } from 'src/utils/timeout';
           // console.log(event.start.dateTime.toISOString(), `Tracking time for ${event.summary}`)
 
           // edit color event on google calendar
-          await updateEvent({
+          await updateEvent(calendarId, {
             ...event,
             colorId: '2',
           });
@@ -123,7 +116,7 @@ import { wait } from 'src/utils/timeout';
   await queue.addAll(queueEvents);
 
   // await Promise.all(queue.map(it => it()))
-})();
+}
 
 /*TODO: 
     integrar com banco de dados

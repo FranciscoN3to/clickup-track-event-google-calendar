@@ -1,14 +1,15 @@
 
-import DatePicker from '@components/Form/DatePicker'
-import { oauthSignIn } from '@providers/auth/oath2.google';
+import DatePicker from '@components/Form/DatePicker' 
+import { timeTracker } from '@services/index';
 import { DateTime } from 'luxon';
-import { FormEvent, useEffect, useState, useRef } from 'react';
+import { FormEvent, useEffect, useState, InputHTMLAttributes } from 'react';
+
+type FormTrack = Record<"calendar_id" | "start_date" | "end_date", InputHTMLAttributes<InputEvent>> 
 
 function Home() {
   const [[start, end], setDefaultDate] = useState<[string, string]>(['', ''])
   const [defaultEmail, setDefaultEmail] = useState<string>('')
-  const form = useRef<HTMLFormElement>()
-
+ 
   useEffect(() => {
     const [startDate, endDate] = [
       DateTime.local({ zone: 'utc' }).startOf('day').minus({ days: 5 }).startOf('day').toISODate(), // start
@@ -21,8 +22,20 @@ function Home() {
     setDefaultEmail(email || '')
   }, [])
 
-  const onSubmit = () => {
-    form.current.defaultPrevented()
+  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
+    const {calendar_id, end_date, start_date} = (e.target as unknown as { elements: FormTrack }).elements
+ 
+    if(calendar_id.value && end_date.value && start_date.value) {
+      localStorage.setItem('calendar-id', String(calendar_id.value))
+      const [startDate, endDate] = [
+        DateTime.fromISO(String(start_date.value)).startOf('day').startOf('day').toJSDate(), // start
+        DateTime.fromISO(String(end_date.value)).startOf('day').endOf('day').toJSDate(), // end
+      ];
+      timeTracker(String(calendar_id.value), startDate, endDate) 
+    }
+
+ 
+    e.preventDefault()
  
   }
 
@@ -35,7 +48,7 @@ function Home() {
           Preencha os campos correspondentes a data desejada para o lançamento.
         </p>
       </div>
-      <form ref={form} className="mx-auto mt-16 max-w-xl sm:mt-20">
+      <form className="mx-auto mt-16 max-w-xl sm:mt-20" onSubmit={onSubmit}>
         <div className="mb-5">
           <label 
             htmlFor="calendarId" 
@@ -58,7 +71,7 @@ function Home() {
           <DatePicker defaultValue={end} label="Data Final" name="end_date" />
         </div>
         <div className="mt-5">
-          <button  className="h-10 px-6 font-semibold rounded-md border bo  text-slate-50 bg-indigo-700" type="button">
+          <button className="h-10 px-6 font-semibold rounded-md border bo  text-slate-50 bg-indigo-700" type="submit">
             Lançar horas
           </button>
         </div>

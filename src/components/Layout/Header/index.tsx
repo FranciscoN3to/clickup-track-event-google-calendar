@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 const navigation = [
   { name: 'Home', href: '/' },
-  { name: 'Credenciais', href: 'credentials' },
+  { name: 'Credenciais clickup', href: 'credentials' },
 ];
 
 function Header() {
