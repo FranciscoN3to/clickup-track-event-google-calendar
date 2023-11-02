@@ -45,7 +45,9 @@ export async function timeTracker(calendarId: string, start: Date, end: Date)  {
         const rateLimitRemaing = Number(headers['x-ratelimit-remaining'] || 0);
         const rateLimitReset = 60 * 1000 + 1500;
 
-        if (status === 429 || rateLimitRemaing < 10) {
+        console.log({rateLimitRemaing, status, headers})
+        //TODO: ver isso depois - status === 429 || rateLimitRemaing < 10
+        if (status === 429) {
           console.log(
             `Pausing queue requests for rate limit: please wait ${
               rateLimitReset / 1000
