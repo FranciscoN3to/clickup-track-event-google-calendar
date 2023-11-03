@@ -3,12 +3,14 @@ import DatePicker from '@components/Form/DatePicker'
 import { timeTracker } from '@services/index';
 import { DateTime } from 'luxon';
 import { FormEvent, useEffect, useState, InputHTMLAttributes } from 'react';
+import { toast } from 'react-toastify';
 
 type FormTrack = Record<"calendar_id" | "start_date" | "end_date", InputHTMLAttributes<InputEvent>> 
 
 function Home() {
   const [[start, end], setDefaultDate] = useState<[string, string]>(['', ''])
   const [defaultEmail, setDefaultEmail] = useState<string>('')
+  const [isTracking, setTrackinStatus] = useState<boolean>(false)
  
   useEffect(() => {
     const [startDate, endDate] = [
@@ -26,12 +28,22 @@ function Home() {
     const {calendar_id, end_date, start_date} = (e.target as unknown as { elements: FormTrack }).elements
  
     if(calendar_id.value && end_date.value && start_date.value) {
+      setTrackinStatus(true)
       localStorage.setItem('calendar-id', String(calendar_id.value))
       const [startDate, endDate] = [
         DateTime.fromISO(String(start_date.value)).startOf('day').startOf('day').toJSDate(), // start
         DateTime.fromISO(String(end_date.value)).startOf('day').endOf('day').toJSDate(), // end
       ];
-      timeTracker(String(calendar_id.value), startDate, endDate) 
+      toast.info("Iniciando lançamento de horas!", { draggable: false, hideProgressBar: true, theme: 'colored' });
+      timeTracker(String(calendar_id.value), startDate, endDate).catch(() => {
+        toast.error("Aconteceu algo de errado!", { draggable: false, hideProgressBar: true, theme: 'colored' });
+      }).then(() => {
+        toast.success("Lançamento efetuado com sucesso!", { draggable: false, hideProgressBar: true, theme: 'colored' });
+      }).finally(() => {
+        setTrackinStatus(false)
+      })
+    } else {
+      toast.error("Preencher os campos devidamente!", { draggable: false, hideProgressBar: true, theme: 'colored' });
     }
 
  
@@ -71,8 +83,8 @@ function Home() {
           <DatePicker defaultValue={end} label="Data Final" name="end_date" />
         </div>
         <div className="mt-5">
-          <button className="h-10 px-6 font-semibold rounded-md border bo  text-slate-50 bg-indigo-700" type="submit">
-            Lançar horas
+          <button disabled={isTracking} className={`h-10 px-6 font-semibold rounded-md border bo  text-slate-50 ${isTracking ? 'bg-slate-400' : 'bg-indigo-700'} `} type="submit">
+            {isTracking ? 'Lançando horas...' : 'Lançar horas'}
           </button>
         </div>
       </form>

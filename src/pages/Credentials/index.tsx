@@ -1,4 +1,7 @@
 import { FormEvent, useEffect, useState, InputHTMLAttributes } from 'react';
+import { toast } from 'react-toastify';
+
+
 
 type FormTrack = Record<"team_id" | "user_id" | "token", InputHTMLAttributes<InputEvent>> 
 
@@ -23,6 +26,8 @@ function Credentials() {
     localStorage.setItem('clickup-team-id', String(team_id.value || ''))
     localStorage.setItem('clickup-user-id', String(user_id.value || ''))
     localStorage.setItem('clickup-token', String(token.value || ''))
+
+    toast.success("Credenciais salvas com sucesso!", { draggable: false, hideProgressBar: true, theme: 'colored' });
     e.preventDefault()
  
   }
