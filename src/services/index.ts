@@ -1,38 +1,40 @@
-import { DateTime } from 'luxon';
-import Pqueue from 'p-queue';
-import { getEvents, updateEvent } from '@services/calendar/events';
-import { getTrackedTime, trackTime } from '@services/clickup/time.tracking';
+import { DateTime } from "luxon";
+import Pqueue from "p-queue";
+import { getEvents, updateEvent } from "@services/calendar/events";
+import { getTrackedTime, trackTime } from "@services/clickup/time.tracking";
 
-import { TrackingTime } from '@services/clickup/types';
-import { wait } from 'src/utils/timeout';
+import { TrackingTime } from "@services/clickup/types";
+import { wait } from "src/utils/timeout";
 
-
-export async function timeTracker(calendarId: string, start: Date, end: Date)  {
+export async function timeTracker(calendarId: string, start: Date, end: Date) {
   const queue = new Pqueue({ concurrency: 10, interval: 2000 });
 
   const eventsList = await getEvents(calendarId, {
     timeMin: start.toISOString(),
     timeMax: end.toISOString(),
     singleEvents: true,
-    orderBy: 'startTime',
+    orderBy: "startTime",
   });
 
   const queueEvents = eventsList
     .filter(
       (it) =>
-        it.status === 'confirmed' &&
-                (it?.summary || '').match(/\[.*\]/g) &&
-                ((it?.attendees || []).some((at) => at?.self && at.responseStatus === 'accepted') ||
-                    it.creator.self),
+        it.status === "confirmed" &&
+        (it?.summary || "").match(/\[.*\]/g) &&
+        ((it?.attendees || []).some(
+          (at) => at?.self && at.responseStatus === "accepted",
+        ) ||
+          it.creator.self),
     )
     .map((event) => {
       return async () => {
-        const taskSumaryMatch = ((event?.summary || '').match(/\[.*\]/g) || []) as string[];
+        const taskSumaryMatch = ((event?.summary || "").match(/\[.*\]/g) ||
+          []) as string[];
         const taskId = taskSumaryMatch.length
-          ? taskSumaryMatch[0].replace(/\[|\]/g, '')
-          : '';
+          ? taskSumaryMatch[0].replace(/\[|\]/g, "")
+          : "";
 
-        const hasCustomTaskId = taskId.includes('-');
+        const hasCustomTaskId = taskId.includes("-");
         let trackTimes: TrackingTime[] = [];
 
         const { data, headers, status } = await getTrackedTime({
@@ -42,12 +44,19 @@ export async function timeTracker(calendarId: string, start: Date, end: Date)  {
 
         trackTimes = data;
 
-        const rateLimitRemaing = Number(headers['x-ratelimit-remaining'] || 0);
+        const rateLimitRemaining = headers["x-ratelimit-remaining"];
         const rateLimitReset = 60 * 1000 + 1500;
 
-        console.log({rateLimitRemaing, status, headers})
-        //TODO: ver isso depois - status === 429 || rateLimitRemaing < 10
-        if (status === 429) {
+        console.log({
+          rateLimitRemaining,
+          status,
+          headers,
+        });
+
+        if (
+          status === 429 ||
+          (rateLimitRemaining && Number(rateLimitRemaining) < 10)
+        ) {
           console.log(
             `Pausing queue requests for rate limit: please wait ${
               rateLimitReset / 1000
@@ -63,22 +72,24 @@ export async function timeTracker(calendarId: string, start: Date, end: Date)  {
 
           trackTimes = tracked.data;
         }
-        const userId = localStorage.getItem('clickup-user-id')
+        const userId = localStorage.getItem("clickup-user-id");
         const userTrackedTimes = trackTimes.find(
           (it) => Number(it.user.id) === Number(userId),
         );
 
         const alreadyTracked = userTrackedTimes?.intervals.some((it) => {
           const startDate = DateTime.fromMillis(Number(it.start))
-            .setZone('utc')
+            .setZone("utc")
             .minus({ minutes: 3 })
             .toJSDate();
           const endDate = DateTime.fromMillis(Number(it.end))
-            .setZone('utc')
+            .setZone("utc")
             .plus({ minutes: 3 })
             .toJSDate();
 
-          return startDate <= event.start.dateTime && endDate >= event.end.dateTime;
+          return (
+            startDate <= event.start.dateTime && endDate >= event.end.dateTime
+          );
         });
 
         // console.log(alreadyTracked)
@@ -102,7 +113,7 @@ export async function timeTracker(calendarId: string, start: Date, end: Date)  {
           // edit color event on google calendar
           await updateEvent(calendarId, {
             ...event,
-            colorId: '2',
+            colorId: "2",
           });
         } else {
           console.log(

@@ -1,11 +1,9 @@
-import { Outlet } from 'react-router-dom';
-import Body from './Body';
-import Header from './Header';
+import { Outlet } from "react-router-dom";
+import Body from "./Body";
 
 function Layout() {
   return (
     <div className="bg-white">
-      <Header />
       <Body>
         <Outlet />
       </Body>

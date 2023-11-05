@@ -1,14 +1,16 @@
-import axios from 'axios';
-import { oauthSignIn } from '@providers/auth/oath2.google';
+import axios from "axios";
+import { oauthSignIn } from "@providers/auth/oath2.google";
 
 const googleAPI = axios.create({
   baseURL: import.meta.env.VITE_GOOGLE_API_URL,
 });
 
 googleAPI.interceptors.request.use(async (axiosConfig) => {
-  const googleToken = localStorage.getItem('google-token')
+  const googleToken = localStorage.getItem("google-token");
   if (axiosConfig.headers && googleToken)
-    Object.assign(axiosConfig.headers, { Authorization: `Bearer ${googleToken}` });
+    Object.assign(axiosConfig.headers, {
+      Authorization: `Bearer ${googleToken}`,
+    });
 
   return axiosConfig;
 });
