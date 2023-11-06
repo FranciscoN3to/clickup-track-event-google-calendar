@@ -54,8 +54,6 @@ function Home() {
 
   const onSubmit = handleSubmit((data) => {
     const { calendar_id, end_date, start_date } = data;
-    console.log({ data });
-    return;
 
     if (calendar_id && end_date && start_date) {
       setTrackingStatus(true);
@@ -72,26 +70,20 @@ function Home() {
           .toJSDate(), // end
       ];
 
-      toast.info("Iniciando lançamento de horas!", {
-        draggable: false,
-        hideProgressBar: true,
-        theme: "colored",
-      });
-      timeTracker(String(calendar_id), startDate, endDate)
-        .catch(() => {
-          toast.error("Aconteceu algo de errado!", {
-            draggable: false,
-            hideProgressBar: true,
+      toast
+        .promise(
+          timeTracker(String(calendar_id), startDate, endDate),
+          {
+            success: "Lançamento efetuado com sucesso!",
+            error: "Aconteceu algo de errado!",
+            pending: "Efetuando lançamento de horas!",
+          },
+          {
             theme: "colored",
-          });
-        })
-        .then(() => {
-          toast.success("Lançamento efetuado com sucesso!", {
             draggable: false,
-            hideProgressBar: true,
-            theme: "colored",
-          });
-        })
+            closeButton: false,
+          },
+        )
         .finally(() => {
           setTrackingStatus(false);
         });
@@ -130,7 +122,7 @@ function Home() {
           </h3>
           <button
             type="button"
-            className="absolute right-0 pt-4 pr-4"
+            className="absolute right-0 top-0 pt-4 pr-4"
             title="Editar"
             onClick={onOpenModal}
           >
